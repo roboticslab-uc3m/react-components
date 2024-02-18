@@ -11,8 +11,10 @@ import { faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
 
 function ForceTorque({ ros }) {
 
+    const [wrenchStampedTopicNames, setWrenchStampedTopicNames] = useState([]);
+    const [selectedWrenchStampedTopicName, setSelectedWrenchStampedTopicName] = useState();
+    const [wrenchStampedTopicNamesJsx, setWrenchStampedTopicNamesJsx] = useState();
     const [topicFtsensor, setTopicFtsensor] = useState();
-    const [topicFtsensorName, setTopicFtsensorName] = useState("/iiwa/id_1/ft_sensor/wrench");
     const [refreshHz, setRefreshHz] = useState(20); // [Hz]
     const [timeMax, setTimeMax] = useState(5); // [s]
     const [forceMax, setForceMax] = useState(100); // [N]
@@ -22,6 +24,15 @@ function ForceTorque({ ros }) {
     const [torqueGraph, setTorqueGraph] = useState();
 
     const [playing, setPlaying] = useState(true);
+
+    useEffect(() => {
+        ros.getTopicsForType("geometry_msgs/WrenchStamped", (got) => {setWrenchStampedTopicNames(got)});
+    }, [ros]);
+
+    useEffect(() => {
+        setSelectedWrenchStampedTopicName(wrenchStampedTopicNames[0]);
+        setWrenchStampedTopicNamesJsx(wrenchStampedTopicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
+    }, [wrenchStampedTopicNames]);
 
     useEffect(() => {
         const d = new Date();
@@ -35,7 +46,7 @@ function ForceTorque({ ros }) {
                 labelsSeparateLines: true,
                 labelsDiv: document.getElementById('forceStatus'),
             }));
-    }, [forceMax, topicFtsensorName]);
+    }, [forceMax, selectedWrenchStampedTopicName]);
 
     useEffect(() => {
         const d = new Date();
@@ -49,15 +60,15 @@ function ForceTorque({ ros }) {
                 labelsSeparateLines: true,
                 labelsDiv: document.getElementById('torqueStatus'),
             }));
-    }, [torqueMax, topicFtsensorName]);
+    }, [torqueMax, selectedWrenchStampedTopicName]);
 
     useEffect(() => {
         setTopicFtsensor(new ROSLIB.Topic({
             ros: ros,
-            name: topicFtsensorName,
+            name: selectedWrenchStampedTopicName,
             messageType: 'geometry_msgs/WrenchStamped'
         }));
-    }, [ros, topicFtsensorName]);
+    }, [ros, selectedWrenchStampedTopicName]);
 
     useEffect(() => {
         if (forceGraph === undefined) return;
@@ -114,13 +125,12 @@ function ForceTorque({ ros }) {
             </Row>
             <Row className="g-3 mb-1">
                 <Col>
-                    <Dropdown onSelect={(selectedKey) => setTopicFtsensorName(selectedKey)}>
+                    <Dropdown onSelect={(selectedKey) => setSelectedWrenchStampedTopicName(selectedKey)}>
                         <Dropdown.Toggle id="dropdown-basic">
-                            {topicFtsensorName}
+                            {selectedWrenchStampedTopicName}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item eventKey="/iiwa/id_1/ft_sensor/wrench">/iiwa/id_1/ft_sensor/wrench</Dropdown.Item>
-                            <Dropdown.Item eventKey="/iiwa/id_2/ft_sensor/wrench">/iiwa/id_2/ft_sensor/wrench</Dropdown.Item>
+                            {wrenchStampedTopicNamesJsx}
                         </Dropdown.Menu>
                     </Dropdown>
                 </Col>
