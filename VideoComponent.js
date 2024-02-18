@@ -4,16 +4,23 @@ import { Container, Row, Col, Dropdown } from 'react-bootstrap';
 
 function Video({websocketIP, ros}) {
 
+    const [imageTopicNames, setImageTopicNames] = useState([]);
+    const [msgImageTopicNames, setMsgImageTopicNames] = useState([]);
     const [selectedVideoTopicName, setSelectedVideoTopicName] = useState();
     const [videoTopicNamesJsx, setVideoTopicNamesJsx] = useState();
 
     useEffect(() => {
-        ros.getTopicsForType("sensor_msgs/msg/Image",
-            (topicNames) => {
-                setSelectedVideoTopicName(topicNames[0]);
-                setVideoTopicNamesJsx(topicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
-            });
-    }, [ros, setSelectedVideoTopicName, setVideoTopicNamesJsx]);
+        ros.getTopicsForType("sensor_msgs/Image", (got) => {setImageTopicNames(got.filter(item => item !== "/undefined"))});
+        ros.getTopicsForType("sensor_msgs/msg/Image", (got) => {setMsgImageTopicNames(got)});
+    }, [ros]);
+
+    useEffect(() => {
+        const topicNames = [];
+        topicNames.push(...imageTopicNames);
+        topicNames.push(...msgImageTopicNames);
+        setSelectedVideoTopicName(topicNames[0]);
+        setVideoTopicNamesJsx(topicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
+    }, [imageTopicNames, msgImageTopicNames]);
 
     return (
         <Container>
