@@ -35,8 +35,7 @@ function ForceTorque({ ros }) {
         const topicNames = [];
         topicNames.push(...wrenchStampedTopicNames);
         topicNames.push(...msgWrenchStampedTopicNames);
-        setSelectedVideoTopicName(topicNames[0]);
-        selectedWrenchStampedTopicName(topicNames[0]);
+        setSelectedWrenchStampedTopicName(topicNames[0]);
         setWrenchStampedTopicNamesJsx(topicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
     }, [wrenchStampedTopicNames, msgWrenchStampedTopicNames]);
 
