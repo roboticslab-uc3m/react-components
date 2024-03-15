@@ -12,6 +12,7 @@ import { faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
 function ForceTorque({ ros }) {
 
     const [wrenchStampedTopicNames, setWrenchStampedTopicNames] = useState([]);
+    const [msgWrenchStampedTopicNames, setMsgWrenchStampedTopicNames] = useState([]);
     const [selectedWrenchStampedTopicName, setSelectedWrenchStampedTopicName] = useState();
     const [wrenchStampedTopicNamesJsx, setWrenchStampedTopicNamesJsx] = useState();
     const [topicFtsensor, setTopicFtsensor] = useState();
@@ -26,13 +27,18 @@ function ForceTorque({ ros }) {
     const [playing, setPlaying] = useState(true);
 
     useEffect(() => {
-        ros.getTopicsForType("geometry_msgs/WrenchStamped", (got) => {setWrenchStampedTopicNames(got)});
+        ros.getTopicsForType("geometry_msgs/WrenchStamped", (got) => {setWrenchStampedTopicNames(got.filter(item => item !== "/undefined"))});
+        ros.getTopicsForType("geometry_msgs/msg/WrenchStamped", (got) => {setMsgWrenchStampedTopicNames(got)});
     }, [ros]);
 
     useEffect(() => {
-        setSelectedWrenchStampedTopicName(wrenchStampedTopicNames[0]);
-        setWrenchStampedTopicNamesJsx(wrenchStampedTopicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
-    }, [wrenchStampedTopicNames]);
+        const topicNames = [];
+        topicNames.push(...wrenchStampedTopicNames);
+        topicNames.push(...msgWrenchStampedTopicNames);
+        setSelectedVideoTopicName(topicNames[0]);
+        selectedWrenchStampedTopicName(topicNames[0]);
+        setWrenchStampedTopicNamesJsx(topicNames.map(topicName => <Dropdown.Item eventKey={topicName} key={topicName}>{topicName}</Dropdown.Item>));
+    }, [wrenchStampedTopicNames, msgWrenchStampedTopicNames]);
 
     useEffect(() => {
         const d = new Date();
